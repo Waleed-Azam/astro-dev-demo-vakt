@@ -1,0 +1,141 @@
+---
+/** Homepage — dark SaaS: hero + live dashboard mock, logos, features,
+ *  steps, pricing calculator, testimonials, FAQ, CTA. */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PricingCalculator from '../components/PricingCalculator.astro';
+import Faq from '../components/Faq.astro';
+
+// Deterministic dashboard bars (seeded — stable across builds)
+const bars = Array.from({ length: 52 }, (_, i) => {
+  const v = Math.abs(Math.sin(i * 12.9898) * 43758.5453) % 1;
+  return { h: 28 + Math.round(v * 68), tall: v > 0.86, delay: (v * 3.2).toFixed(2) };
+});
+
+const features = [
+  { icon: '⚡', lime: true, t: '30-second checks', d: 'Catch outages in seconds, not minutes. 12 regions including Oslo, with multi-region consensus so a single blip never pages you.' },
+  { icon: '🔔', lime: false, t: 'Alerting that respects sleep', d: 'Escalation chains, follow-the-sun rotations and quiet hours with per-severity overrides. SEV-1 pages; everything else waits.' },
+  { icon: '🧭', lime: false, t: 'Multi-step flows', d: 'Script login → cart → checkout as one monitor. Per-step assertions and screenshots on failure — record in the browser, no YAML required.' },
+  { icon: '📣', lime: true, t: 'Status pages that market you', d: '90-day bars from real check data on your own domain. Incident templates, subscribers and Slack-native updates.' },
+  { icon: '🧩', lime: false, t: 'API-first, Terraform-ready', d: 'Every dashboard action exists in REST + webhooks with signed payloads. Manage monitors as code from day one.' },
+  { icon: '🛡️', lime: false, t: 'SSL & domain watch', d: 'Certificate expiry, DNS changes and domain renewal tracked automatically. Never explain an expired cert again.' },
+];
+
+const faqs = [
+  { q: 'How is Vakt different from a free ping service?', a: 'Free pingers check from one place and cry wolf. Vakt checks from 12 regions with multi-region consensus, asserts on status, body and latency — and only opens an incident when regions agree. You get paged for outages, not blips.' },
+  { q: 'Will it wake me for false alarms?', a: 'That is the problem we exist to solve. Consensus checks, confirmation counts, quiet hours and escalation chains mean the median customer gets paged 4× less than their previous tool — while detecting real outages faster.' },
+  { q: 'Can I manage monitors as code?', a: 'Yes — REST API, signed webhooks and an official Terraform provider. Most teams define monitors next to the services they watch and review changes in pull requests.' },
+  { q: 'Do you offer status pages on our own domain?', a: 'Yes, on every plan including trial: status.yourco.com with automatic TLS, custom branding, subscribers and a 90-day history rendered from your real check data.' },
+  { q: 'What happens after the 14-day trial?', a: 'Nothing scary: monitors pause, data is kept 90 days, and you can export everything. No credit card required to start, no sales call to cancel.' },
+];
+---
+<BaseLayout title="Vakt — Uptime monitoring for teams that ship" currentPath="/">
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <p><span class="status-pill"><span class="pulse-dot"></span>All systems operational · 99.99% / 90d</span></p>
+        <h1 class="display" style="margin-top:1.2rem">Know the second your site <span class="grad">goes down.</span></h1>
+        <p class="lead" style="margin-top:1.2rem">30-second checks from 12 regions, alerting that respects sleep, and status pages that turn uptime into marketing. Set up in 4 minutes — <code class="inline">curl</code> included.</p>
+        <div class="hero-actions">
+          <a href="/signup" class="btn btn-lime">Start monitoring free <span class="arrow">→</span></a>
+          <a href="/status" class="btn btn-ghost">See live status page</a>
+        </div>
+        <div class="hero-proof">
+          <div><strong>8,400+</strong>teams monitored</div>
+          <div><strong>2.1B</strong>checks / month</div>
+          <div><strong>21s</strong>median detection</div>
+        </div>
+      </div>
+      <div class="dash reveal" aria-label="Live monitoring dashboard preview">
+        <div class="dash-bar"><i></i><i></i><i></i><span>app.vakt.demo/overview</span></div>
+        <div class="dash-body">
+          <div class="dash-top">
+            <div><span class="muted" style="font-size:.8rem">Uptime · last 90 days</span><br /><strong>99.99<small>%</small></strong></div>
+            <span class="status-pill"><span class="pulse-dot"></span>Operational</span>
+          </div>
+          <div class="bars" aria-hidden="true">
+            {bars.map((b) => (<i class={b.tall ? 'tall' : ''} style={`height:${b.h}%;animation-delay:${b.delay}s`}></i>))}
+          </div>
+          <div class="eventlog" data-eventlog aria-label="Live check events"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOGOS -->
+  <div class="logos" aria-label="Customer logos">
+    <div class="logos-track">
+      {['NORDLYS','HAVN','FISKETORGET','SKAGEN','LYSE','BREMNES','NORDLYS','HAVN','FISKETORGET','SKAGEN','LYSE','BREMNES'].map((l) => (<span>{l} ✦</span>))}
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <section class="section"><div class="container">
+    <div class="center reveal"><p class="eyebrow">Why Vakt</p>
+      <h2 class="h-lg" style="margin-top:.7rem">Monitoring that pages for outages,<br /><span class="lime">not for blips.</span></h2>
+    </div>
+    <div class="grid-3" style="margin-top:var(--s4)">
+      {features.map((f, i) => (
+        <div class={`card reveal reveal-d${i % 3}`}>
+          <div class={`icon-tile${f.lime ? ' lime' : ''}`} aria-hidden="true">{f.icon}</div>
+          <h3 class="h-sm">{f.t}</h3><p>{f.d}</p>
+        </div>
+      ))}
+    </div>
+  </div></section>
+
+  <!-- STEPS -->
+  <section class="section" style="padding-top:0"><div class="container">
+    <div class="split">
+      <div class="reveal"><p class="eyebrow">How it works</p>
+        <h2 class="h-lg" style="margin:.7rem 0 1rem">Live in 4 minutes.<br />Asleep by midnight.</h2>
+        <p class="lead">No agents, no code changes, no sales call. If you can paste a URL, you can monitor it.</p>
+        <p style="margin-top:1.2rem"><a href="/docs/quickstart" class="btn btn-ghost btn-sm">Read the quickstart <span class="arrow">→</span></a></p>
+      </div>
+      <div style="display:grid;gap:1.8rem">
+        {[['Paste a URL', 'Add any endpoint. Vakt detects protocol, suggests interval and regions.'], ['Pick who gets woken', 'Rotations, escalations, Slack, PagerDuty. Test the whole path with one click.'], ['Publish your 99.9%', 'Status page live on your domain. Monitors open incidents automatically.']].map((s, i) => (
+          <div class={`step reveal reveal-d${i}`}><span class="step-num">{i + 1}</span><h3 class="h-sm">{s[0]}</h3><p>{s[1]}</p></div>
+        ))}
+      </div>
+    </div>
+  </div></section>
+
+  <!-- CALCULATOR -->
+  <section class="section" style="padding-top:0"><div class="container">
+    <div class="center reveal"><p class="eyebrow">Pricing</p>
+      <h2 class="h-lg" style="margin-top:.7rem">Drag the sliders. <span class="lime">No surprises.</span></h2>
+      <p class="lead" style="margin-top:.8rem">Transparent per-monitor pricing. Every plan starts with a 14-day trial — <a href="/pricing" style="text-decoration:underline">compare plans →</a></p>
+    </div>
+    <div style="margin-top:var(--s3)"><PricingCalculator /></div>
+  </div></section>
+
+  <!-- TESTIMONIALS -->
+  <section class="section" style="padding-top:0"><div class="container">
+    <div class="center reveal"><p class="eyebrow">Loved by on-call humans</p>
+      <h2 class="h-lg" style="margin-top:.7rem">4.9 from 2,100+ reviews</h2>
+    </div>
+    <div class="grid-3" style="margin-top:var(--s3)">
+      {[['We deleted three tools the week we adopted Vakt. Pages dropped 80% — and the ones left are all real.', 'SRE Lead', 'Fintech, 200 engineers'], ['The status page paid for itself in the first incident. Customers refreshed it instead of our support inbox.', 'CTO', 'SaaS, 40 people'], ['Setup genuinely took minutes. The Terraform provider meant monitors went through code review like everything else.', 'Platform Engineer', 'E-commerce, 90 people']].map((t, i) => (
+        <figure class={`quote reveal reveal-d${i}`}><span class="stars">★★★★★</span><p>“{t[0]}”</p><footer><strong>{t[1]}</strong> — {t[2]}</footer></figure>
+      ))}
+    </div>
+  </div></section>
+
+  <!-- FAQ -->
+  <section class="section" style="padding-top:0"><div class="container" style="max-width:820px">
+    <div class="center reveal"><p class="eyebrow">FAQ</p><h2 class="h-lg" style="margin-top:.7rem">Asked at 3am, answered now</h2></div>
+    <div style="margin-top:var(--s3)"><Faq items={faqs} /></div>
+  </div></section>
+
+  <!-- CTA -->
+  <section class="section" style="padding-top:0"><div class="container">
+    <div class="cta-band reveal">
+      <div style="position:relative"><h2 class="h-md">Your next outage is already scheduled.<br /><span class="lime">Be the first to know.</span></h2>
+      <p class="muted" style="margin-top:.6rem">Free 14-day trial · No credit card · Cancel in one click</p></div>
+      <div style="position:relative;display:flex;gap:.8rem;flex-wrap:wrap">
+        <a href="/signup" class="btn btn-lime">Start monitoring free <span class="arrow">→</span></a>
+        <a href="/docs/quickstart" class="btn btn-ghost">Quickstart</a>
+      </div>
+    </div>
+  </div></section>
+</BaseLayout>

@@ -1,0 +1,55 @@
+---
+/** Interactive pricing calculator — vanilla JS, no island runtime.
+ *  Updates live from sliders + billing toggle. Fully keyboard-operable. */
+---
+<div class="calc reveal" data-calc>
+  <div>
+    <label for="calc-monitors">Uptime monitors <output data-out-monitors for="calc-monitors">25</output></label>
+    <input type="range" id="calc-monitors" data-in-monitors min="1" max="100" value="25" step="1" />
+    <label for="calc-seats">Team seats <output data-out-seats for="calc-seats">8</output></label>
+    <input type="range" id="calc-seats" data-in-seats min="1" max="50" value="8" step="1" />
+    <label for="calc-interval">Check interval</label>
+    <select id="calc-interval" data-in-interval>
+      <option value="1.5">Every 30 seconds (×1.5)</option>
+      <option value="1" selected>Every 60 seconds (×1.0)</option>
+      <option value="0.6">Every 5 minutes (×0.6)</option>
+    </select>
+    <div class="toggle-row">
+      <span>Monthly</span>
+      <span class="switch"><input type="checkbox" data-in-yearly id="calc-yearly" checked /><i aria-hidden="true"></i></span>
+      <span><label for="calc-yearly" style="cursor:pointer">Yearly <span class="lime" style="font-weight:700">−20%</span></label></span>
+    </div>
+  </div>
+  <div class="calc-result">
+    <span class="muted" style="font-size:.85rem">Estimated plan</span>
+    <strong data-out-price>$31</strong>
+    <span class="muted" style="font-size:.9rem" data-out-per>/month, billed yearly</span>
+    <p style="margin-top:1rem"><a href="/signup" class="btn btn-lime btn-sm">Start 14-day trial <span class="arrow">→</span></a></p>
+  </div>
+</div>
+<script>
+  document.querySelectorAll('[data-calc]').forEach((root) => {
+    const el = <T extends Element>(s: string): T => root.querySelector(s) as T;
+    const monitors = el<HTMLInputElement>('[data-in-monitors]');
+    const seats = el<HTMLInputElement>('[data-in-seats]');
+    const interval = el<HTMLSelectElement>('[data-in-interval]');
+    const yearly = el<HTMLInputElement>('[data-in-yearly]');
+    const outM = el<HTMLElement>('[data-out-monitors]');
+    const outS = el<HTMLElement>('[data-out-seats]');
+    const outP = el<HTMLElement>('[data-out-price]');
+    const outPer = el<HTMLElement>('[data-out-per]');
+    const update = () => {
+      const m = Number(monitors.value), s = Number(seats.value);
+      const mult = Number(interval.value);
+      let monthly = (m * 0.49 + s * 6) * mult;
+      if (yearly.checked) monthly *= 0.8;
+      monthly = Math.max(19, Math.round(monthly));
+      outM.textContent = String(m);
+      outS.textContent = String(s);
+      outP.textContent = '$' + monthly;
+      outPer.textContent = yearly.checked ? '/month, billed yearly' : '/month, billed monthly';
+    };
+    [monitors, seats, interval, yearly].forEach((i) => i.addEventListener('input', update));
+    update();
+  });
+</script>

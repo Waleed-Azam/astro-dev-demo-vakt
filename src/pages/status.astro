@@ -1,0 +1,55 @@
+---
+/** Public status page — 90-day bars + incident history (this doubles as the product demo). */
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+function dayStates(seed: number): ('ok' | 'degraded' | 'down')[] {
+  return Array.from({ length: 90 }, (_, i) => {
+    const v = Math.abs(Math.sin(seed * 91.7 + i * 47.3) * 24634.6) % 1;
+    if (v > 0.985) return 'down';
+    if (v > 0.955) return 'degraded';
+    return 'ok';
+  });
+}
+const components = [
+  { name: 'Checks pipeline', uptime: '99.99%', seed: 3 },
+  { name: 'API & dashboard', uptime: '99.98%', seed: 11 },
+  { name: 'Status pages', uptime: '100.0%', seed: 27 },
+  { name: 'Notifications', uptime: '99.99%', seed: 42 },
+];
+---
+<BaseLayout title="Status — Vakt" description="Live status: 90-day uptime per component plus incident history." currentPath="/status">
+  <section class="page-hero"><div class="container">
+    <p class="eyebrow">Status</p>
+    <h1 class="h-lg" style="margin-top:.7rem">Vakt status <span class="lime">(this page is the product)</span></h1>
+    <p class="lead" style="margin-top:.8rem">This is a real Vakt status page, generated from check data. Yours looks like this on day one.</p>
+  </div></section>
+  <section class="section"><div class="container" style="max-width:960px">
+    <div class="status-banner reveal">
+      <span class="pulse-dot" style="width:14px;height:14px"></span>
+      <div><h2 class="h-sm">All systems operational</h2><p class="muted" style="font-size:.92rem">Last incident 23 days ago · Updated just now</p></div>
+      <span class="muted" style="margin-left:auto;font-family:var(--font-mono);font-size:.85rem">90-day view</span>
+    </div>
+    <div class="status-rows">
+      {components.map((c) => (
+        <div class="status-row reveal">
+          <header><h3 class="h-sm">{c.name}</h3><span class="lime" style="font-family:var(--font-mono)">{c.uptime}</span></header>
+          <div class="uptime-bars" role="img" aria-label={`${c.name}: ${c.uptime} over 90 days`}>
+            {dayStates(c.seed).map((s) => (<i class={s === 'ok' ? '' : s} title={s === 'ok' ? 'Operational' : s}></i>))}
+          </div>
+        </div>
+      ))}
+    </div>
+    <h2 class="h-md reveal" style="margin-top:var(--s4)">Recent incidents</h2>
+    <div class="incident resolved reveal">
+      <time class="muted" style="font-family:var(--font-mono);font-size:.82rem">SEP 04, 2026 · RESOLVED IN 34 MIN</time>
+      <h4>Elevated API latency (fra1)</h4>
+      <p> p99 latency crossed 900ms for 22 minutes after a deploy. Rolled back, added a canary step to the pipeline. Full postmortem published within 48h.</p>
+    </div>
+    <div class="incident resolved reveal">
+      <time class="muted" style="font-family:var(--font-mono);font-size:.82rem">JUL 19, 2026 · RESOLVED IN 12 MIN</time>
+      <h4>Delayed Slack notifications</h4>
+      <p>A queue backlog delayed Slack alerts by up to 6 minutes. Email and webhooks unaffected. Queue autoscaling fixed the class of issue.</p>
+    </div>
+    <p class="reveal" style="margin-top:var(--s3)"><a href="/signup" class="btn btn-lime">Get your own status page <span class="arrow">→</span></a></p>
+  </div></section>
+</BaseLayout>

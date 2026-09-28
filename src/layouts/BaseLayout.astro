@@ -1,0 +1,117 @@
+---
+/**
+ * BaseLayout — SEO head, header/footer, one delegated client script.
+ * Dark SaaS theme. Zero framework JS: menu, reveals, FAQ, live event log.
+ */
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import '../styles/global.css';
+
+interface Props { title: string; description?: string; currentPath?: string; }
+const {
+  title,
+  description = 'Vakt — uptime monitoring and status pages for teams that ship. 30-second checks from 12 regions, alerting that respects sleep.',
+  currentPath = '/',
+} = Astro.props;
+const siteUrl = (import.meta.env.PUBLIC_SITE_URL ?? Astro.site?.toString() ?? 'http://localhost:4321').replace(/\/$/, '');
+const canonical = new URL(Astro.url.pathname, siteUrl).toString();
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Vakt" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/svg+xml" href="/images/favicon.svg" />
+    <meta name="theme-color" content="#070b14" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
+    <slot name="head" />
+  </head>
+  <body>
+    <Header currentPath={currentPath} />
+    <main id="main"><slot /></main>
+    <Footer />
+    <script>
+      // Header state
+      const header = document.querySelector('.site-header');
+      const onScroll = () => header?.classList.toggle('scrolled', window.scrollY > 8);
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+
+      // Mobile menu
+      const menuBtn = document.querySelector('[data-menu-button]') as HTMLElement | null;
+      const mobileMenu = document.querySelector('[data-mobile-menu]') as HTMLElement | null;
+      if (menuBtn && mobileMenu) {
+        menuBtn.addEventListener('click', () => {
+          const open = mobileMenu.classList.toggle('open');
+          menuBtn.setAttribute('aria-expanded', String(open));
+          menuBtn.textContent = open ? 'Close ✕' : 'Menu ☰';
+        });
+      }
+
+      // Scroll reveals
+      const revealEls = document.querySelectorAll('.reveal');
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(
+          (es) => es.forEach((e) => e.isIntersecting && e.target.classList.add('in')),
+          { threshold: 0.12 }
+        );
+        revealEls.forEach((el) => io.observe(el));
+      } else revealEls.forEach((el) => el.classList.add('in'));
+
+      // FAQ accordion (delegated, single-open)
+      document.addEventListener('click', (ev) => {
+        const target = ev.target as HTMLElement | null;
+        const btn = target ? target.closest('[data-faq-button]') : null;
+        if (!btn) return;
+        const item = btn.closest('[data-faq-item]');
+        if (!item || !item.parentElement) return;
+        const willOpen = item.getAttribute('data-open') !== 'true';
+        item.parentElement.querySelectorAll('[data-faq-item]').forEach((s: Element) => s.setAttribute('data-open', 'false'));
+        item.setAttribute('data-open', String(willOpen));
+        btn.setAttribute('aria-expanded', String(willOpen));
+      });
+
+      // Hero event log — cycles realistic monitor lines (purely presentational)
+      const log = document.querySelector('[data-eventlog]');
+      if (log) {
+        const lines = [
+          ['ok', '✓  api.vakt.demo — 200 in 84ms · fra1'],
+          ['ok', '✓  checkout — 200 in 121ms · ams3'],
+          ['ok', '✓  status page — 200 in 45ms · osl1'],
+          ['warn', '△  api latency p99 890ms · evaluating (2/3)'],
+          ['ok', '✓  api recovered — 200 in 96ms · fra1'],
+          ['ok', '✓  webhook relay — 200 in 63ms · nyc1'],
+        ];
+        let i = 0;
+        const tick = () => {
+          const [cls, text] = lines[i % lines.length];
+          const time = new Date().toISOString().slice(11, 19);
+          const div = document.createElement('div');
+          div.className = cls;
+          div.textContent = `${time}  ${text}`;
+          log.prepend(div);
+          while (log.children.length > 4) log.lastChild?.remove();
+          i++;
+        };
+        tick(); tick(); tick();
+        window.setInterval(tick, 2200);
+      }
+
+      document.querySelectorAll('[data-year]').forEach((el) => { el.textContent = String(new Date().getFullYear()); });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,72 @@
+---
+/** Waitlist form → POST /api/waitlist → Resend + Railway backup. */
+---
+<form class="form-card" data-waitlist-form method="POST" action="/api/waitlist" novalidate>
+  <div class="form-grid">
+    <div class="field" data-field="name">
+      <label for="wl-name">Name <span class="req">*</span></label>
+      <input id="wl-name" name="name" type="text" autocomplete="name" required placeholder="Kari Nordmann" />
+      <span class="error" data-error>Please enter your name.</span>
+    </div>
+    <div class="field" data-field="email">
+      <label for="wl-email">Work email <span class="req">*</span></label>
+      <input id="wl-email" name="email" type="email" autocomplete="email" required placeholder="kari@company.no" />
+      <span class="error" data-error>Please enter a valid work email.</span>
+    </div>
+    <div class="field" data-field="company">
+      <label for="wl-company">Company</label>
+      <input id="wl-company" name="company" type="text" autocomplete="organization" placeholder="Company AS" />
+    </div>
+    <div class="field" data-field="teamSize">
+      <label for="wl-team">Team size</label>
+      <select id="wl-team" name="teamSize">
+        <option value="">Just me</option><option>2–10</option><option>11–50</option><option>51+</option>
+      </select>
+    </div>
+    <div class="hp" aria-hidden="true"><label>Website (leave empty)<input type="text" name="website" tabindex="-1" autocomplete="off" /></label></div>
+  </div>
+  <div style="margin-top:1.3rem;display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+    <button type="submit" class="btn btn-lime" data-submit>Get early access <span class="arrow">→</span></button>
+    <span class="muted" style="font-size:.88rem">Free 14-day trial · No credit card</span>
+  </div>
+  <div class="form-status" data-status role="status" aria-live="polite"></div>
+</form>
+<script>
+  document.querySelectorAll('[data-waitlist-form]').forEach((form) => {
+    const formEl = form as HTMLFormElement;
+    const status = formEl.querySelector('[data-status]') as HTMLElement;
+    const submitBtn = formEl.querySelector('[data-submit]') as HTMLButtonElement;
+    const setErr = (name: string, msg: string | null) => {
+      const f = formEl.querySelector(`[data-field="${name}"]`);
+      if (!f) return;
+      f.classList.toggle('invalid', !!msg);
+      const e = f.querySelector('[data-error]');
+      if (e && msg) e.textContent = msg;
+    };
+    formEl.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      status.className = 'form-status';
+      formEl.querySelectorAll('.field.invalid').forEach((f) => f.classList.remove('invalid'));
+      const data = Object.fromEntries(new FormData(formEl).entries());
+      let bad = false;
+      if (String(data.name || '').trim().length < 2) { setErr('name', 'Please enter your name.'); bad = true; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(data.email || '').trim())) { setErr('email', 'Please enter a valid work email.'); bad = true; }
+      if (bad) { status.textContent = 'Please fix the highlighted fields.'; status.className = 'form-status show error'; return; }
+      submitBtn.disabled = true; submitBtn.textContent = 'Joining…';
+      try {
+        const res = await fetch('/api/waitlist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+        const json = await res.json().catch(() => ({}));
+        if (res.ok && json.ok) {
+          formEl.reset();
+          status.textContent = json.mocked ? '✓ You are on the list! (Demo mode: email logged — connect RESEND_API_KEY to go live.)' : '✓ You are on the list! Check your inbox for next steps.';
+          status.className = 'form-status show success';
+        } else if (json.errors) {
+          Object.entries(json.errors).forEach(([k, v]) => setErr(k, String(v)));
+          status.textContent = 'Please fix the highlighted fields.'; status.className = 'form-status show error';
+        } else { status.textContent = json.error || 'Something went wrong. Try again.'; status.className = 'form-status show error'; }
+      } catch {
+        status.textContent = 'Network error — check your connection and retry.'; status.className = 'form-status show error';
+      } finally { submitBtn.disabled = false; submitBtn.innerHTML = 'Get early access <span class="arrow">→</span>'; }
+    });
+  });
+</script>

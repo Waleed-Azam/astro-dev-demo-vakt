@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import WaitlistForm from '../components/WaitlistForm.astro';
+---
+<BaseLayout title="Start free — Vakt" description="Join the waitlist: 14-day trial, no credit card, first monitor in 4 minutes." currentPath="/signup">
+  <section class="page-hero"><div class="container">
+    <p class="eyebrow">Early access</p>
+    <h1 class="h-lg" style="margin-top:.7rem">Start monitoring <span class="lime">in 4 minutes.</span></h1>
+    <p class="lead" style="margin-top:.8rem">14-day Pro trial · No credit card · Cancel in one click. This form runs on the same stack as the product: Astro API → Resend → Railway backup.</p>
+  </div></section>
+  <section class="section"><div class="container split" style="align-items:start">
+    <div class="reveal"><WaitlistForm /></div>
+    <aside class="reveal reveal-d1" style="display:grid;gap:1.2rem">
+      <div class="card"><h3 class="h-sm">What you get on trial</h3>
+        <ul style="list-style:none;padding:0;margin-top:.8rem;display:grid;gap:.5rem;color:var(--muted)">
+          <li>✓ 100 monitors, 30-sec checks</li><li>✓ All 12 regions incl. Oslo</li>
+          <li>✓ Status page on your domain</li><li>✓ Slack + webhook alerts</li>
+        </ul></div>
+      <div class="quote"><span class="stars">★★★★★</span><p>“Setup genuinely took minutes. First real page caught a deploy bug within the hour.”</p><footer><strong>CTO</strong> — SaaS, 40 people</footer></div>
+    </aside>
+  </div></section>
+</BaseLayout>

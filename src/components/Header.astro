@@ -1,0 +1,28 @@
+---
+interface Props { currentPath?: string }
+const { currentPath = '/' } = Astro.props;
+const links = [
+  { href: '/', label: 'Product' },
+  { href: '/pricing', label: 'Pricing' },
+  { href: '/docs', label: 'Docs' },
+  { href: '/changelog', label: 'Changelog' },
+  { href: '/status', label: 'Status' },
+];
+const isActive = (h: string) => (h === '/' ? currentPath === '/' : currentPath.startsWith(h));
+---
+<header class="site-header">
+  <div class="container nav-inner">
+    <a href="/" class="brand" aria-label="Vakt — home"><span class="brand-mark" aria-hidden="true">V</span>Vakt</a>
+    <nav aria-label="Primary"><ul class="nav-links">
+      {links.map((l) => (<li><a href={l.href} aria-current={isActive(l.href) ? 'page' : undefined}>{l.label}</a></li>))}
+    </ul></nav>
+    <div class="nav-cta">
+      <a href="/status" class="muted" style="font-size:.9rem">● Operational</a>
+      <a href="/signup" class="btn btn-lime btn-sm">Start free <span class="arrow">→</span></a>
+      <button class="menu-button" data-menu-button aria-expanded="false" aria-controls="mobile-menu">Menu ☰</button>
+    </div>
+  </div>
+  <div class="mobile-menu" data-mobile-menu id="mobile-menu"><div class="container">
+    {links.map((l) => (<a href={l.href}>{l.label}</a>))}<a href="/signup">Start free →</a>
+  </div></div>
+</header>

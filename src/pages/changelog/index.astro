@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+const entries = (await getCollection('changelog')).sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+<BaseLayout title="Changelog — Vakt" description="What shipped lately: 30-second checks, Oslo region, multi-step flows." currentPath="/changelog">
+  <section class="page-hero"><div class="container">
+    <p class="eyebrow">Changelog</p>
+    <h1 class="h-lg" style="margin-top:.7rem">Shipped, <span class="lime">not slipped.</span></h1>
+    <p class="lead" style="margin-top:.8rem">Every release, in plain language. Subscribe via RSS or webhook — links in the footer of each entry.</p>
+  </div></section>
+  <section class="section"><div class="container" style="max-width:860px">
+    <div class="timeline">
+      {entries.map((e) => (
+        <article class="tl-item reveal">
+          <div class="tl-card">
+            <p><span class="ver">{e.data.version}</span> <span class="muted" style="font-size:.88rem;margin-left:.5rem">{e.data.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span></p>
+            <h2 class="h-sm" style="margin-top:.6rem">{e.data.title}</h2>
+            <div class="prose" style="margin-top:.6rem">
+              {e.body && <p>{e.body.split('\n\n')[0]}</p>}
+              {e.data.highlights.length > 0 && (<ul>{e.data.highlights.map((h) => (<li>{h}</li>))}</ul>)}
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div></section>
+</BaseLayout>

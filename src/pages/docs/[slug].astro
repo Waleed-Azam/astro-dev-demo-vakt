@@ -1,0 +1,35 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const guides = await getCollection('docs');
+  return guides.map((g) => ({ params: { slug: g.slug }, props: { slug: g.slug } }));
+}
+const { slug } = Astro.props;
+const guides = (await getCollection('docs')).sort((a, b) => a.data.order - b.data.order);
+const entry = guides.find((g) => g.slug === slug);
+if (!entry) return Astro.redirect('/404');
+const { Content } = await entry.render();
+const idx = guides.findIndex((g) => g.slug === slug);
+const prev = guides[idx - 1]; const next = guides[idx + 1];
+---
+<BaseLayout title={`${entry.data.title} — Vakt Docs`} description={entry.data.description} currentPath="/docs">
+  <section class="section"><div class="container docs-layout">
+    <aside class="docs-nav"><h4>Guides</h4>
+      {guides.map((g) => (<a href={`/docs/${g.slug}`} aria-current={g.slug === slug ? 'page' : undefined}>{g.data.title}</a>))}
+      <h4 style="margin-top:1.2rem">More</h4>
+      <a href="/changelog">Changelog</a><a href="/status">Status</a>
+    </aside>
+    <article>
+      <p class="eyebrow">Guide {String(entry.data.order).padStart(2, '0')}</p>
+      <h1 class="h-lg" style="margin:.6rem 0 .5rem">{entry.data.title}</h1>
+      <p class="muted">Updated {entry.data.updated.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+      <div class="prose" style="margin-top:1.5rem"><Content /></div>
+      <nav style="display:flex;justify-content:space-between;gap:1rem;margin-top:2.5rem;flex-wrap:wrap">
+        <span>{prev && <a href={`/docs/${prev.slug}`} class="btn btn-ghost btn-sm">← {prev.data.title}</a>}</span>
+        <span>{next && <a href={`/docs/${next.slug}`} class="btn btn-ghost btn-sm">{next.data.title} →</a>}</span>
+      </nav>
+    </article>
+  </div></section>
+</BaseLayout>

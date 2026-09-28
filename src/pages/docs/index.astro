@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+const guides = (await getCollection('docs')).sort((a, b) => a.data.order - b.data.order);
+---
+<BaseLayout title="Docs — Vakt" description="Guides: quickstart, monitors, status pages, API and webhooks." currentPath="/docs">
+  <section class="page-hero"><div class="container">
+    <p class="eyebrow">Documentation</p>
+    <h1 class="h-lg" style="margin-top:.7rem">Learn Vakt in <span class="lime">an afternoon.</span></h1>
+    <p class="lead" style="margin-top:.8rem">Four guides, zero fluff. Start with the quickstart — most teams send their first alert within 4 minutes.</p>
+  </div></section>
+  <section class="section"><div class="container grid-2">
+    {guides.map((g, i) => (
+      <a href={`/docs/${g.slug}`} class={`card reveal reveal-d${i % 3}`}>
+        <span class="ver">Guide {String(g.data.order).padStart(2, '0')}</span>
+        <h2 class="h-sm" style="margin-top:.8rem">{g.data.title}</h2>
+        <p style="margin-top:.4rem">{g.data.description}</p>
+        <p class="muted" style="margin-top:.8rem;font-size:.85rem">Updated {g.data.updated.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })} →</p>
+      </a>
+    ))}
+  </div></section>
+</BaseLayout>
